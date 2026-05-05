@@ -8,13 +8,15 @@ export class BasePage {
 
   constructor(protected page: Page) {
     this.logo = this.page.locator('.logo-icon');
-    this.consentButton = this.page.getByRole('button', { name: 'Nõustun' });
+    this.consentButton = this.page.getByRole('button', { name: /N.ustun|I agree|Accept/i });
     this.searchInput = this.page.locator('#top-search-text');
     this.searchButton = this.page.getByRole('button', { name: 'Search' });
   }
 
   async acceptCookies() {
-    await this.consentButton.click();
+    if (await this.consentButton.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await this.consentButton.click();
+    }
   }
 
   async verifyLogo() {

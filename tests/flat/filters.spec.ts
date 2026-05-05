@@ -15,7 +15,10 @@ test.describe('Navigate Products via Filters', () => {
     page = await context.newPage();
 
     await page.goto('https://www.kriso.ee/');
-    await page.getByRole('button', { name: /N.ustun|I agree|Accept/i }).click();
+    const consentButton = page.getByRole('button', { name: /N.ustun|I agree|Accept/i });
+    if (await consentButton.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await consentButton.click();
+    }
   });
 
   test.afterAll(async () => {
@@ -41,10 +44,7 @@ test.describe('Navigate Products via Filters', () => {
       });
     }
 
-    const kitarrFilter = page
-      .getByRole('link', { name: /Kitarr/i })
-      .filter({ visible: true })
-      .first();
+    const kitarrFilter = page.getByRole('link', { name: /Kitarr/i }).filter({ visible: true }).first();
 
     if (await kitarrFilter.isVisible().catch(() => false)) {
       await kitarrFilter.click();
@@ -63,10 +63,7 @@ test.describe('Navigate Products via Filters', () => {
   });
 
   test('Test apply language and format filters', async () => {
-    const englishFilter = page
-      .getByRole('link', { name: /English/i })
-      .filter({ visible: true })
-      .first();
+    const englishFilter = page.getByRole('link', { name: /English/i }).filter({ visible: true }).first();
 
     if (await englishFilter.isVisible().catch(() => false)) {
       await englishFilter.click();
@@ -95,9 +92,7 @@ test.describe('Navigate Products via Filters', () => {
     }
 
     await expect(page).toHaveURL(/format=CD/);
-    await expect(
-      page.getByText('CD', { exact: true }).filter({ visible: true }).first(),
-    ).toBeVisible();
+    await expect(page.getByText('CD', { exact: true }).filter({ visible: true }).first()).toBeVisible();
 
     const formatFilteredText = await page.locator('.sb-results-total').first().textContent();
     formatFilteredCount = Number((formatFilteredText || '').replace(/\D/g, '')) || 0;

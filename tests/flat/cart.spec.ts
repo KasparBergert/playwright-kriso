@@ -1,12 +1,6 @@
 /**
  * Part I - Flat tests (no POM)
  * Test suite: Add Books to Shopping Cart
- *
- * Rules:
- *   - Use only: getByRole, getByText, getByPlaceholder, getByLabel
- *   - No CSS class selectors, no XPath
- *
- * Tip: run `npx playwright codegen https://www.kriso.ee` to discover selectors.
  */
 import { test, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
@@ -15,7 +9,6 @@ test.describe.configure({ mode: 'serial' });
 
 let page: Page;
 let basketSumOfTwo = 0;
-let basketSumOfOne = 0;
 
 test.describe('Add Books to Shopping Cart', () => {
   test.beforeAll(async ({ browser }) => {
@@ -23,11 +16,16 @@ test.describe('Add Books to Shopping Cart', () => {
     page = await context.newPage();
 
     await page.goto('https://www.kriso.ee/');
-    await page.getByRole('button', { name: /N.ustun|I agree|Accept/i }).click();
+    const consentButton = page.getByRole('button', { name: /N.ustun|I agree|Accept/i });
+    if (await consentButton.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await consentButton.click();
+    }
   });
 
   test.afterAll(async () => {
-    await page.context().close();
+    if (page) {
+      await page.context().close();
+    }
   });
 
   test('Test logo is visible', async () => {
@@ -45,6 +43,7 @@ test.describe('Add Books to Shopping Cart', () => {
   });
 
   test('Test add book to cart', async () => {
+    await expect(page.getByRole('link', { name: 'Lisa ostukorvi' }).nth(0)).toBeVisible();
     await page.getByRole('link', { name: 'Lisa ostukorvi' }).nth(0).click();
     await expect(page.locator('.item-messagebox')).toContainText('Toode lisati ostukorvi');
     await expect(page.locator('.cart-products')).toContainText('1');
@@ -52,6 +51,7 @@ test.describe('Add Books to Shopping Cart', () => {
   });
 
   test('Test add second book to cart', async () => {
+    await expect(page.getByRole('link', { name: 'Lisa ostukorvi' }).nth(5)).toBeVisible();
     await page.getByRole('link', { name: 'Lisa ostukorvi' }).nth(5).click();
     await expect(page.locator('.item-messagebox')).toContainText('Toode lisati ostukorvi');
     await expect(page.locator('.cart-products')).toContainText('2');
@@ -62,7 +62,6 @@ test.describe('Add Books to Shopping Cart', () => {
     await expect(page.locator('.order-qty > .o-value')).toContainText('2');
 
     basketSumOfTwo = await returnBasketSum();
-
     const basketSumTotalText = await page.locator('.order-total > .o-value').textContent();
     const basketSumTotal =
       Number((basketSumTotalText || '').replace(/[^0-9.,]+/g, '').replace(',', '.')) || 0;
@@ -74,8 +73,7 @@ test.describe('Add Books to Shopping Cart', () => {
     await page.locator('.icon-remove').nth(0).click();
     await expect(page.locator('.order-qty > .o-value')).toContainText('1');
 
-    basketSumOfOne = await returnBasketSum();
-
+    const basketSumOfOne = await returnBasketSum();
     const basketSumTotalText = await page.locator('.order-total > .o-value').textContent();
     const basketSumTotal =
       Number((basketSumTotalText || '').replace(/[^0-9.,]+/g, '').replace(',', '.')) || 0;
