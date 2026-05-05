@@ -1,54 +1,54 @@
 /**
- * Part II — Page Object Model tests
+ * Part I - Flat tests (no POM)
  * Test suite: Search for Books by Keywords
  *
  * Rules:
- *   - No raw selectors in test files — all locators live in page classes
  *   - Use only: getByRole, getByText, getByPlaceholder, getByLabel
+ *   - No CSS class selectors, no XPath
+ *
+ * Tip: run `npx playwright codegen https://www.kriso.ee` to discover selectors.
  */
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { HomePage } from '../../pages/HomePage';
+import { SearchPage } from '../../pages/SearchPage';
+
+test.describe.configure({ mode: 'serial' });
 
 let page: Page;
-let homePage: HomePage;
+let searchPage: SearchPage;
 
-test.describe('Search for Books by Keywords (POM)', () => {
-
+test.describe('Search for Books by Keywords', () => {
   test.beforeAll(async ({ browser }) => {
-      const context = await browser.newContext();
-      page = await context.newPage();
-  
-      homePage = new HomePage(page);
-  
-      await homePage.openUrl();
-      await homePage.acceptCookies();
-    });
-  
-    test.afterAll(async () => {
-      await page.context().close();
-    });
-  
-    test('Test logo is visible', async () => {
-      await homePage.verifyLogo();
-    }); 
+    const context = await browser.newContext();
+    page = await context.newPage();
 
-    test('Test no products found', async () => {
-      await homePage.searchByKeyword('jaslkfjalskjdkls');
-      await homePage.verifyNoProductsFoundMessage();
-    });
+    searchPage = new SearchPage(page);
 
-    test('Test search results contain keyword', async () => {
-    await homePage.searchByKeyword('tolkien');
-    await homePage.verifyResultsCountMoreThan(1)
-
-    //TODO check results contain keyword
+    await searchPage.openUrl();
+    await searchPage.acceptCookies();
   });
 
-    test('Test search by ISBN', async () => {
-    await homePage.searchByKeyword('9780307588371');
-
-    //TODO check correct book is shown
+  test.afterAll(async () => {
+    await page.context().close();
   });
 
+  test('Test logo is visible', async () => {
+    await searchPage.verifyLogo();
+  });
+
+  test('Test no products found', async () => {
+    await searchPage.searchByKeyword('jaslkfjalskjdkls');
+    await searchPage.verifyNoProductsFoundMessage();
+  });
+
+  test('Test search results contain keyword', async () => {
+    await searchPage.searchByKeyword('tolkien');
+    await searchPage.verifyResultsCountMoreThan(1);
+    await searchPage.verifyResultsContainKeyword('tolkien');
+  });
+
+  test('Test search by ISBN', async () => {
+    await searchPage.searchByKeyword('9780307588371');
+    await searchPage.verifyBookVisible('Gone Girl');
+  });
 });
