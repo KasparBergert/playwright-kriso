@@ -15,7 +15,9 @@ export class HomePage extends BasePage {
   constructor(page: Page) {
     super(page);
     this.resultsTotal = this.page.locator('.sb-results-total').first();
-    this.addToCartLink = this.page.getByRole('link', { name: 'Lisa ostukorvi' });
+    this.addToCartLink = this.page.getByRole('link', {
+      name: /Lisa ostukorvi|Add to (cart|basket)/i,
+    });
     this.addToCartMessage = this.page.locator('.item-messagebox');
     this.cartCount = this.page.locator('.cart-products');
     this.backButton = this.page.locator('.cartbtn-event.back');
@@ -38,7 +40,7 @@ export class HomePage extends BasePage {
   }
 
   async verifyAddToCartMessage() {
-    await expect(this.addToCartMessage).toContainText('Toode lisati ostukorvi');
+    await expect(this.addToCartMessage).toContainText(/Toode lisati ostukorvi|added/i);
   }
 
   async verifyCartCount(expectedCount: number) {

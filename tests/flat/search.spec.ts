@@ -34,7 +34,7 @@ test.describe('Search for Books by Keywords', () => {
   test('Test no products found', async () => {
     await page.locator('#top-search-text').click();
     await page.locator('#top-search-text').fill('jaslkfjalskjdkls');
-    await page.getByRole('button', { name: 'Search' }).click();
+    await page.locator('#top-search-text').press('Enter');
 
     await expect(page.locator('.msg.msg-info')).toContainText(
       /search did not find any match|vastavat raamatut ei leitud/i,
@@ -44,7 +44,7 @@ test.describe('Search for Books by Keywords', () => {
   test('Test search results contain keyword', async () => {
     await page.locator('#top-search-text').click();
     await page.locator('#top-search-text').fill('tolkien');
-    await page.getByRole('button', { name: 'Search' }).click();
+    await page.locator('#top-search-text').press('Enter');
 
     const resultsText = await page.locator('.sb-results-total').first().textContent();
     const total = Number((resultsText || '').replace(/\D/g, '')) || 0;
@@ -62,7 +62,7 @@ test.describe('Search for Books by Keywords', () => {
   test('Test search by ISBN', async () => {
     await page.locator('#top-search-text').click();
     await page.locator('#top-search-text').fill('9780307588371');
-    await page.getByRole('button', { name: 'Search' }).click();
+    await page.locator('#top-search-text').press('Enter');
 
     await expect(page.getByText('Gone Girl', { exact: false }).first()).toBeVisible();
   });

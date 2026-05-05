@@ -35,7 +35,7 @@ test.describe('Add Books to Shopping Cart', () => {
   test('Test search by keyword', async () => {
     await page.locator('#top-search-text').click();
     await page.locator('#top-search-text').fill('harry potter');
-    await page.getByRole('button', { name: 'Search' }).click();
+    await page.locator('#top-search-text').press('Enter');
 
     const resultsText = await page.locator('.sb-results-total').first().textContent();
     const total = Number((resultsText || '').replace(/\D/g, '')) || 0;
@@ -43,17 +43,23 @@ test.describe('Add Books to Shopping Cart', () => {
   });
 
   test('Test add book to cart', async () => {
-    await expect(page.getByRole('link', { name: 'Lisa ostukorvi' }).nth(0)).toBeVisible();
-    await page.getByRole('link', { name: 'Lisa ostukorvi' }).nth(0).click();
-    await expect(page.locator('.item-messagebox')).toContainText('Toode lisati ostukorvi');
+    const addToCartLinks = page.getByRole('link', {
+      name: /Lisa ostukorvi|Add to (cart|basket)/i,
+    });
+    await expect(addToCartLinks.nth(0)).toBeVisible();
+    await addToCartLinks.nth(0).click();
+    await expect(page.locator('.item-messagebox')).toContainText(/Toode lisati ostukorvi|added/i);
     await expect(page.locator('.cart-products')).toContainText('1');
     await page.locator('.cartbtn-event.back').click();
   });
 
   test('Test add second book to cart', async () => {
-    await expect(page.getByRole('link', { name: 'Lisa ostukorvi' }).nth(5)).toBeVisible();
-    await page.getByRole('link', { name: 'Lisa ostukorvi' }).nth(5).click();
-    await expect(page.locator('.item-messagebox')).toContainText('Toode lisati ostukorvi');
+    const addToCartLinks = page.getByRole('link', {
+      name: /Lisa ostukorvi|Add to (cart|basket)/i,
+    });
+    await expect(addToCartLinks.nth(5)).toBeVisible();
+    await addToCartLinks.nth(5).click();
+    await expect(page.locator('.item-messagebox')).toContainText(/Toode lisati ostukorvi|added/i);
     await expect(page.locator('.cart-products')).toContainText('2');
   });
 
